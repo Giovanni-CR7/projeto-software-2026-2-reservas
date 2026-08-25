@@ -2,152 +2,97 @@
 
 API Spring Boot para gerenciamento de reserva de ingressos com fluxo completo: criar evento → reservar ingresso → confirmar pagamento → obter tickets.
 
-## Tecnologias
 
-- Spring Boot 3.1.5
-- Java 17
-- Maven
-- H2 Database (em memória)
-- Docker
+## Exercício 1
 
-## Fluxo de Negócio
+Excutar a aplicação no Docker conectand no Postgres.
 
-1. **Criar Evento** - `POST /events`
-2. **Reservar Ingresso** - `POST /events/{eventId}/reservations`
-3. **Confirmar Pagamento** - `POST /reservations/{reservationId}/confirm`
-4. **Listar Ingressos** - `GET /tickets/{cpf}`
-
-## Endpoints
-
-### Events
-- `GET /events` - Lista todos os eventos
-- `POST /events` - Cria um novo evento
-
-### Reservations
-- `POST /events/{eventId}/reservations` - Cria uma reserva para um evento
-- `POST /reservations/{reservationId}/confirm` - Confirma a reserva e processa o pagamento
-
-### Tickets
-- `GET /tickets/{cpf}` - Lista ingressos confirmados por CPF
-
-## Como Executar
-
-### Opção 1: Local (Maven)
-
-```bash
-# Instale Maven (se não tiver)
-brew install maven  # macOS
-# ou
-apt-get install maven  # Linux
-
-# Execute a aplicação
-mvn clean install
-mvn spring-boot:run
-```
-
-A API estará disponível em `http://localhost:8080`
-
-### Opção 2: Docker
-
-```bash
-# Construa a imagem
-docker build -t reservas-api .
-
-# Execute o container
-docker run -p 8080:8080 reservas-api
-```
-
-### Opção 3: Docker Compose
-
-```bash
-# Execute com docker-compose
-docker-compose up
-```
-
-## Usando a Coleção do Postman
-
-1. Abra o Postman
-2. Clique em "Import" no canto superior esquerdo
-3. Selecione o arquivo `Reservas-API.postman_collection.json`
-4. A coleção será importada com todas as requisições
-
-### Variáveis do Postman
-
-A coleção usa as seguintes variáveis (edite conforme necessário):
-
-- `base_url` - URL base da API (padrão: `http://localhost:8080`)
-- `event_id` - ID do evento (atualizado ao criar)
-- `reservation_id` - ID da reserva (atualizado ao criar)
-- `cpf` - CPF do cliente (padrão: `12345678900`)
-
-## Exemplo de Fluxo no Postman
-
-1. **Criar um Evento**
-   - POST `/events`
-   - Body: Nome, Data, Total de Ingressos, Preço
-   - Copie o `id` retornado
-
-2. **Criar uma Reserva**
-   - POST `/events/{id}/reservations`
-   - Body: CPF do cliente
-   - Copie o `id` retornado
-
-3. **Confirmar a Reserva (com Pagamento)**
-   - POST `/reservations/{id}/confirm`
-   - Body: Tipo de pagamento (PIX/CREDITO/BOLETO) e dados do pagamento
-   - Selecione `CREDITO` ou `PIX` para teste rápido
-
-4. **Listar Ingressos**
-   - GET `/tickets/{cpf}`
-   - Use o mesmo CPF da reserva
-
-## Tipos de Pagamento
-
-- **PIX** - Requer chave PIX (dados de exemplo: código QR)
-- **CREDITO** - Requer número do cartão
-- **BOLETO** - Requer número do boleto
-
-## Banco de Dados
-
-A API usa **H2 em memória**, o que significa:
-
-- Dados são armazenados durante a execução
-- Ao reiniciar a aplicação, os dados são perdidos
-- Console H2 disponível em `http://localhost:8080/h2-console`
-  - Usuário: `sa`
-  - Senha: (deixe em branco)
-  - JDBC URL: `jdbc:h2:mem:reservasdb`
-
-## Estrutura do Projeto
+Passo 0 - Opcional - Limpar o Docker
 
 ```
-projeto-software-2026-2-reservas/
-├── src/
-│   └── main/
-│       ├── java/com/reservas/
-│       │   ├── entity/          # Entidades JPA
-│       │   ├── repository/      # Interfaces de persistência
-│       │   ├── service/         # Lógica de negócio
-│       │   ├── controller/      # Endpoints REST
-│       │   ├── dto/             # Data Transfer Objects
-│       │   └── ReservasApplication.java
-│       └── resources/
-│           └── application.properties
-├── pom.xml
-├── Dockerfile
-├── docker-compose.yml
-└── Reservas-API.postman_collection.json
+docker system prune -a
 ```
 
-## Tratamento de Erros
+Passo 1 - Criar a rede Docker
 
-- **400 Bad Request** - Dados inválidos ou reserva em estado inválido
-- **404 Not Found** - Evento ou reserva não encontrada
-- **500 Internal Server Error** - Erro no servidor
+```
+docker network create -d bridge rede
+```
 
-## Notas
+Passo 2 - Executar o Postgres
 
-- Ingressos disponíveis são decrementados ao criar uma reserva
-- Só é possível confirmar reservas em status PENDING
-- O pagamento é registrado mas não é processado (apenas salvo no banco)
-- Cada confirmação de pagamento gera um ticket (ingresso confirmado)
+```
+docker run -d --name postgres-aula -e POSTGRES_DB=auladb -e POSTGRES_USER=usuario -e POSTGRES_PASSWORD=senha --network rede -p 5432:5432 postgres
+```
+
+Passo 3 - Mudar o application.properties
+
+
+```
+spring.datasource.url=jdbc:postgresql://postgres-aula:5432/auladb
+spring.datasource.username=usuario
+spring.datasource.password=senha
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+```
+
+Passo 4 - Construir a imagem
+
+```
+docker build -t reservas .
+```
+
+Passo 5 - Executar a imagem
+
+```
+docker run -p 8081:8081 --name reservas reservas
+```
+
+Passo 6 - Mudar novamente o application.properties
+
+```
+spring.datasource.url=jdbc:postgresql://${DB_HOST:localhost}:5432/auladb
+spring.datasource.username=usuario
+spring.datasource.password=senha
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+```
+
+Passo 7 - Construir a imagem novamente
+
+```
+docker build -t reservas .
+```
+
+Passo 8 - Executar a imagem novamente
+
+```
+docker run -p 8081:8081 -e BD_HOST=postgres-aula --name reservas reservas
+```
+
+## Exercício 2
+
+Executar a aplicação também na AWS
+
+Passo 1 - Criar a network na máquina da aws
+
+
+```
+docker network create -d bridge rede
+```
+
+Passo 2 
+
+```
+docker run -d --name postgres-aula -e POSTGRES_DB=auladb -e POSTGRES_USER=usuario -e POSTGRES_PASSWORD=senha --network rede -p 5432:5432 postgres
+```
+
+Passo 3 - Escrever o pipeline que sobe a aplicação para a AWS, se basear no que a gente fez para o projeto anterior: https://github.com/ezambomsantana/projeto-software-2026-2-pagamento/blob/main/.github/workflows/deploy.yml
+
+Lembrar de adicionar o --network (não fizemos isso no exercício anterior) e também o -e com o DB_HOST=postgres-aula
+
+Adicionar também a senha como variável de ambiente, precisa colocar no application.properties e também colocar o -e como parâmetro do docker run.
+
+Passo 4 - Colocar todas as secrets nno GitHub, DOCKERHUB_TOKEN, HOST_TEST, KEY_TEST, DB_PASSWORD,...
