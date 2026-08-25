@@ -88,9 +88,9 @@
               "raw": "{\n  \"paymentType\": \"PIX\",\n  \"paymentData\": \"00020126580014br.gov.bcb.pix123456789\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/reservations/{{reservation_id}}/confirm",
+              "raw": "{{base_url}}/events/reservations/{{reservation_id}}/confirm",
               "host": ["{{base_url}}"],
-              "path": ["reservations", "{{reservation_id}}", "confirm"]
+              "path": ["events", "reservations", "{{reservation_id}}", "confirm"]
             },
             "description": "Confirma a reserva e processa o pagamento via PIX. Use o reservation_id retornado ao criar uma reserva. O paymentData deve conter a chave PIX de origem."
           },
@@ -111,9 +111,9 @@
               "raw": "{\n  \"paymentType\": \"CREDITO\",\n  \"paymentData\": \"4111111111111111\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/reservations/{{reservation_id}}/confirm",
+              "raw": "{{base_url}}/events/reservations/{{reservation_id}}/confirm",
               "host": ["{{base_url}}"],
-              "path": ["reservations", "{{reservation_id}}", "confirm"]
+              "path": ["events", "reservations", "{{reservation_id}}", "confirm"]
             },
             "description": "Confirma a reserva e processa o pagamento com Cartão de Crédito. O paymentData deve conter o número do cartão."
           },
@@ -134,11 +134,25 @@
               "raw": "{\n  \"paymentType\": \"BOLETO\",\n  \"paymentData\": \"12345.67890 12345.678901 12345.678901 1 12345678901234\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/reservations/{{reservation_id}}/confirm",
+              "raw": "{{base_url}}/events/reservations/{{reservation_id}}/confirm",
               "host": ["{{base_url}}"],
-              "path": ["reservations", "{{reservation_id}}", "confirm"]
+              "path": ["events", "reservations", "{{reservation_id}}", "confirm"]
             },
             "description": "Confirma a reserva e processa o pagamento via Boleto. O paymentData deve conter o número do boleto."
+          },
+          "response": []
+        },
+        {
+          "name": "List All Reservations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/events/reservations",
+              "host": ["{{base_url}}"],
+              "path": ["events", "reservations"]
+            },
+            "description": "Lista todas as reservas com seus detalhes, incluindo status de pagamento"
           },
           "response": []
         }

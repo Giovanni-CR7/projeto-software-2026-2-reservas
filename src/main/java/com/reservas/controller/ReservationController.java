@@ -5,6 +5,7 @@ import com.reservas.dto.ConfirmReservationResponse;
 import com.reservas.dto.CreateReservationRequest;
 import com.reservas.dto.CreateReservationResponse;
 import com.reservas.dto.ErrorResponse;
+import com.reservas.dto.ReservationResponse;
 import com.reservas.entity.Event;
 import com.reservas.entity.Payment;
 import com.reservas.entity.Reservation;
@@ -13,6 +14,8 @@ import com.reservas.service.ReservationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/events")
@@ -70,5 +73,11 @@ public class ReservationController {
                     new ErrorResponse(e.getMessage())
             );
         }
+    }
+
+    @GetMapping("/reservations")
+    public ResponseEntity<List<ReservationResponse>> listAllReservations() {
+        List<ReservationResponse> reservations = reservationService.getAllReservations();
+        return ResponseEntity.ok(reservations);
     }
 }

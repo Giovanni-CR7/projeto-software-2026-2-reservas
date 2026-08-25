@@ -1,5 +1,6 @@
 package com.reservas.service;
 
+import com.reservas.dto.ReservationResponse;
 import com.reservas.entity.Event;
 import com.reservas.entity.Payment;
 import com.reservas.entity.Reservation;
@@ -9,6 +10,9 @@ import com.reservas.repository.ReservationRepository;
 import com.reservas.repository.TicketRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
@@ -76,5 +80,29 @@ public class ReservationService {
     public Reservation getReservationById(Long reservationId) {
         return reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("Reserva não encontrada"));
+    }
+
+    public List<ReservationResponse> getAllReservations() {
+        return reservationRepository.findAll()
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    private ReservationResponse convertToResponse(Reservation reservation) {
+        Event event = reservation.getEvent();
+        String paymentStatus = reservation.getPayment() != null
+                ? reservation.getPayment().getStatus().toString()
+                : null;
+
+        return new ReservationResponse(
+                reservation.getId(),
+                event.getId(),
+                event.getName(),
+                reservation.getCpf(),
+                reservation.getStatus().toString(),
+                reservation.getCreatedAt(),
+                paymentStatus
+        );
     }
 }
