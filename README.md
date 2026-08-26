@@ -37,6 +37,16 @@ spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 ```
 
+Passo 3.1 - Adicionar dependência do postgres e remover  a do H2
+
+```
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+```
+
 Passo 4 - Construir a imagem
 
 ```
